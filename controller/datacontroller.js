@@ -5,18 +5,18 @@ const getcsvdata = asyncHandler(async (req, res) => {
   const page=Number(req.query.page) ||1;
   const sort=Number(req.query.sort) || 0;  //0 for descending,1 for ascending
   const search=req.query.search || "";
+  const type=req.query.type || "";
   const { readFile,utils } = pkg;
-var dataPathExcel = "./data/Transactions.xlsx"
-var wb = readFile(dataPathExcel);
-var sheetName = wb.SheetNames[0]
-var sheetValue = wb.Sheets[sheetName];
+let dataPathExcel = "./data/Transactions.xlsx"
+let wb = readFile(dataPathExcel);
+let sheetName = wb.SheetNames[0]
+let sheetValue = wb.Sheets[sheetName];
 //console.log(sheetValue);
 var excelData =await utils.sheet_to_json(sheetValue);
-let searchdata= excelData;
+let searchdata=await excelData;
 let count=await excelData.length;
 //searching
-const checksearch =await excelData.some((obj) => obj.Address === search);
-if(search !=="" &&checksearch){
+if(search !==""){
   searchdata=await searchdata.filter((data)=>data.Address===search)
   count=await searchdata.length
 }
@@ -31,6 +31,11 @@ else {
 let startIndex=await pageSize *(page-1)
 let endIndex=await pageSize *page
 searchdata=await searchdata.slice(startIndex,endIndex)
+//pdf data
+if(type ==="pdf"){
+  searchdata= await excelData;
+  count=await excelData.length;
+}
 res.send({
   data:searchdata,
   count,
